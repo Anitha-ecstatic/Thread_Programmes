@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <future>
+unsigned long long calculateFactorial(int n) {
+    unsigned long long result = 1;
+    for (int i = 1; i <= n; ++i) {
+        result *= i;
+    }
+    return result;
+}
+
+// Callback function to process fut1 and fut2 results
+void callbackFunction(future<unsigned long long>& fut, const string& futName) {
+    unsigned long long result = fut.get();
+    cout << "Factorial of " << futName << " is: " << result << endl;
+}
+
+// Function to perform matrix multiplication
+vector<vector<int>> matrixMultiplication(const vector<vector<int>>& A, const vector<vector<int>>& B) {
+    // Assuming A and B are compatible for multiplication
+    int m = A.size();
+    int n = B.size();
+    int p = B[0].size();
+    vector<vector<int>> result(m, vector<int>(p, 0));
+
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < p; ++j) {
+            for (int k = 0; k < n; ++k) {
+                result[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+
+    return result;
+}
+
+int main() {
+    int n1 = 5;
+    int n2 = 6;
+
+    // Calculate factorial of 'n1' asynchronously using fut1
+    future<unsigned long long> fut1 = async(launch::async, calculateFactorial, n1);
+
+    // Calculate factorial of 'n2' asynchronously using fut2
+    future<unsigned long long> fut2 = async(launch::async, calculateFactorial, n2);
+
+    // Attach callback functions to fut1 and fut2
+    future<void> callbackFuture1 = async(launch::async, callbackFunction, ref(fut1), "fut1");
+    future<void> callbackFuture2 = async(launch::async, callbackFunction, ref(fut2), "fut2");
+
+    // Wait for the callback functions to finish (i.e., fut1 and fut2 results are processed)
+    callbackFuture1.wait();
+    callbackFuture2.wait();
+
+    // Define two matrices A and B for multiplication
+    vector<vector<int>> A = { {1, 2, 3}, {4, 5, 6} };
+    vector<vector<int>> B = { {7, 8}, {9, 10}, {11, 12} };
+
+    // Perform matrix multiplication
+    vector<vector<int>> result = matrixMultiplication(A, B);
+
+    // Display the result of matrix multiplication
+    cout << "Matrix multiplication result:" << endl;
+    for (const auto& row : result) {
+        for (int val : row) {
+            cout << val << " ";
+        }
+        cout << endl;
+    }
+
+    return 0;
+}

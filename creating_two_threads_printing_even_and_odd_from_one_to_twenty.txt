@@ -1,0 +1,32 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+using namespace std;
+
+mutex mtx; // Mutex for synchronization
+
+void printEvenNumbers() {
+    for (int i = 2; i <= 20; i += 2) {
+        unique_lock<mutex> lock(mtx); // Lock the mutex
+        cout << "Even: " << i << endl;
+        lock.unlock(); // Unlock the mutex
+    }
+}
+
+void printOddNumbers() {
+    for (int i = 1; i <= 20; i += 2) {
+        unique_lock<mutex> lock(mtx); // Lock the mutex
+        cout << "Odd: " << i << endl;
+        lock.unlock(); // Unlock the mutex
+    }
+}
+
+int main() {
+    thread evenThread(printEvenNumbers);
+    thread oddThread(printOddNumbers);
+
+    evenThread.join();
+    oddThread.join();
+
+    return 0;
+}
